@@ -1,0 +1,198 @@
+name: VSX Release and GitHub Release
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "package.json"
+      - ".github/workflows/vsx-release.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "package.json"
+      - ".github/workflows/vsx-release.yml"
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  version-check:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      version-changed: ${{ steps.version.outputs.changed }}
+      tag-name: ${{ steps.version.outputs.tag-name }}
+    steps:
+      - name: Check out git repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Need at least 2 commits to compare
+
+      - name: Get version from package.json
+        id: version
+        run: |
+          # Get current version
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "tag-name=v$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          # Check if version changed (only on push, not PR)
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # Get previous version from the last commit
+            git checkout HEAD~1
+            PREVIOUS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.0.0")
+            git checkout HEAD
+            
+            if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+              echo "changed=true" >> $GITHUB_OUTPUT
+              echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
+            else
+              echo "changed=false" >> $GITHUB_OUTPUT
+              echo "Version unchanged: $CURRENT_VERSION"
+            fi
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Build job - runs on all events
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out git repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install submodules
+        run: npm run init-submodules
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Package extension
+        run: |
+          npm install -g @vscode/vsce
+          vsce package
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-vsix
+          path: "*.vsix"
+
+  # Deploy job - only runs when version changed on main branch
+  deploy:
+    needs: [version-check, test-and-build]
+    if: needs.version-check.outputs.version-changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out git repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download VSIX artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: extension-vsix
+
+      - name: Get extension info
+        id: extension-info
+        run: |
+          # Extract extension name and version from package.json
+          EXTENSION_NAME=$(node -p "require('./package.json').name")
+          EXTENSION_VERSION=$(node -p "require('./package.json').version")
+          EXTENSION_DISPLAY_NAME=$(node -p "require('./package.json').displayName || require('./package.json').name")
+          EXTENSION_DESCRIPTION=$(node -p "require('./package.json').description || ''")
+
+          echo "name=$EXTENSION_NAME" >> $GITHUB_OUTPUT
+          echo "version=$EXTENSION_VERSION" >> $GITHUB_OUTPUT
+          echo "display-name=$EXTENSION_DISPLAY_NAME" >> $GITHUB_OUTPUT
+          echo "description=$EXTENSION_DESCRIPTION" >> $GITHUB_OUTPUT
+
+      - name: Publish to Open VSX Registry
+        uses: HaaLeo/publish-vscode-extension@v2
+        id: publishToOpenVSX
+        with:
+          pat: ${{ secrets.OPEN_VSX_PUBLISH_TOKEN }}
+
+      - name: Publish to Visual Studio Marketplace
+        uses: HaaLeo/publish-vscode-extension@v2
+        with:
+          pat: ${{ secrets.VS_PUBLISH_TOKEN }}
+          skipDuplicate: true
+          registryUrl: https://marketplace.visualstudio.com
+          yarn: false
+          extensionFile: ${{ steps.publishToOpenVSX.outputs.vsixPath }}
+
+      - name: Generate Release Notes
+        id: release-notes
+        run: |
+          # Create release notes from recent commits
+          echo "## What's New in v${{ needs.version-check.outputs.version }}" > release_notes.md
+          echo "" >> release_notes.md
+
+          # Get commits since last tag (or all commits if no previous tag)
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [ -n "$LAST_TAG" ]; then
+            echo "### Changes since $LAST_TAG:" >> release_notes.md
+            git log --pretty=format:"- %s" "$LAST_TAG"..HEAD >> release_notes.md
+          else
+            echo "### Initial release changes:" >> release_notes.md
+            git log --pretty=format:"- %s" >> release_notes.md
+          fi
+
+          echo "" >> release_notes.md
+          echo "## Installation" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### VS Code Marketplace" >> release_notes.md
+          echo "Install directly from VS Code marketplace or use:" >> release_notes.md
+          echo '```bash' >> release_notes.md
+          echo "code --install-extension ${{ steps.extension-info.outputs.name }}" >> release_notes.md
+          echo '```' >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### Open VSX Registry" >> release_notes.md
+          echo "Available on [Open VSX Registry](https://open-vsx.org/extension/${{ steps.extension-info.outputs.name }})" >> release_notes.md
+
+          # Set multiline output for GitHub Actions
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          cat release_notes.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.version-check.outputs.tag-name }}
+          name: "${{ steps.extension-info.outputs.display-name }} v${{ needs.version-check.outputs.version }}"
+          body: ${{ steps.release-notes.outputs.content }}
+          files: "*.vsix"
+          draft: false
+          prerelease: false
+          generate_release_notes: true # This adds automatic GitHub-generated notes as well
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update GitHub Release with Marketplace Links
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.version-check.outputs.tag-name }}
+          append_body: true
+          body: |
+
+            ## 📦 Published Packages
+
+            - **VS Code Marketplace**: [Install Extension](https://marketplace.visualstudio.com/items?itemName=${{ steps.extension-info.outputs.name }})
+            - **Open VSX Registry**: [View on Open VSX](https://open-vsx.org/extension/${{ steps.extension-info.outputs.name }})
+
+            ---
+            *This release was automatically created when the version in package.json was updated to v${{ needs.version-check.outputs.version }}*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

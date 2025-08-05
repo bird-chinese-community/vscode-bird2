@@ -8,7 +8,7 @@
 
 Professional syntax highlighting support for BIRD2 routing daemon configuration files in Visual Studio Code & VSCodium.
 
-**[English](#english) | [中文](#中文)**
+**[English Version](#english) | [中文版](#中文)**
 
 ---
 
@@ -96,13 +96,13 @@ This project is licensed under the Mozilla Public License 2.0 - see the [LICENSE
 
 - **全面的语法高亮**：完整支持 BIRD2 配置语法，包括：
 
-  - 协议定义（BGP、OSPF、RIP、Babel 等）
-  - 过滤器和函数定义
-  - 模板定义
+  - `protocol` 定义（BGP、OSPF、RIP、Babel 等）
+  - `filter` 和 `function` 定义
+  - 模板定义 (`template`)
   - IP 地址和网络前缀
   - BGP 路径表达式
-  - VPN 路由区分符（RD）
-  - 注释和块结构
+  - VPN 路由区分符 (Route Distinguishes)
+  - 注释和 `block` 指令结构
 
 - **多种文件格式支持**：
 
@@ -126,7 +126,7 @@ This project is licensed under the Mozilla Public License 2.0 - see the [LICENSE
 
 ### 使用方法
 
-安装后，扩展会自动为支持的文件类型提供语法高亮。只需打开任何 BIRD2 配置文件即可享受增强的语法高亮效果。
+安装后，扩展会自动为支持的文件类型提供语法高亮，只需打开任何 BIRD2 配置文件即可享受增强的语法高亮效果。
 
 ### 系统要求
 
