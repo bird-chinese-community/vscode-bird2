@@ -40,7 +40,7 @@
     "prepackage": "npm run init-submodules"
   },
   "devDependencies": {
-    "@vscode/vsce": "^2.19.0"
+    "@vscode/vsce": "^2.32.0"
   },
   "icon": "assets/favicon-256.png",
   "galleryBanner": {
@@ -48,20 +48,35 @@
     "theme": "dark"
   },
   "contributes": {
-    "languages": [{
-      "id": "bird2",
-      "aliases": ["BIRD2 Configuration", "bird2", "BIRD2"],
-      "extensions": [".conf", ".bird", ".bird2", ".bird3", ".bird2.conf", ".bird3.conf"],
-      "configuration": "./language-configuration.json",
-      "icon": {
-        "light": "./assets/favicon.svg",
-        "dark": "./assets/favicon.svg"
+    "languages": [
+      {
+        "id": "bird2",
+        "aliases": [
+          "BIRD2 Configuration",
+          "bird2",
+          "BIRD2"
+        ],
+        "extensions": [
+          ".conf",
+          ".bird",
+          ".bird2",
+          ".bird3",
+          ".bird2.conf",
+          ".bird3.conf"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./assets/favicon.svg",
+          "dark": "./assets/favicon.svg"
+        }
       }
-    }],
-    "grammars": [{
-      "language": "bird2",
-      "scopeName": "source.bird2",
-      "path": "./syntaxes/bird-tm-grammar/grammars/bird2.tmLanguage.json"
-    }]
+    ],
+    "grammars": [
+      {
+        "language": "bird2",
+        "scopeName": "source.bird2",
+        "path": "./syntaxes/bird-tm-grammar/grammars/bird2.tmLanguage.json"
+      }
+    ]
   }
 }
