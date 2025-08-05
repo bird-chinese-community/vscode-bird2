@@ -1,0 +1,56 @@
+{
+  "name": "vscode-bird2-conf",
+  "displayName": "BIRD2 Configuration",
+  "description": "Syntax highlighting for BIRD2 routing daemon configuration files",
+  "version": "0.0.1-beta.1",
+  "publisher": "bird-chinese-community",
+  "author": {
+    "name": "BIRD Chinese Community",
+    "email": "dev-bird@xmsl.dev",
+    "url": "https://github.com/bird-chinese-community/"
+  },
+  "license": "MPL-2.0",
+  "homepage": "https://github.com/bird-chinese-community/BIRD-tm-language-grammar",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bird-chinese-community/vscode-bird2-conf"
+  },
+  "bugs": {
+    "url": "https://github.com/bird-chinese-community/vscode-bird2-conf/issues"
+  },
+  "keywords": [
+    "bird2",
+    "routing",
+    "network",
+    "configuration",
+    "syntax-highlighting"
+  ],
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "icon": "assets/favicon-256.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "contributes": {
+    "languages": [{
+      "id": "bird2",
+      "aliases": ["BIRD2 Configuration", "bird2", "BIRD2"],
+      "extensions": [".conf", ".bird", ".bird2", ".bird3", ".bird2.conf", ".bird3.conf"],
+      "configuration": "./language-configuration.json",
+      "icon": {
+        "light": "./assets/favicon.svg",
+        "dark": "./assets/favicon.svg"
+      }
+    }],
+    "grammars": [{
+      "language": "bird2",
+      "scopeName": "source.bird2",
+      "path": "./syntaxes/bird-tm-grammar/grammars/bird2.tmLanguage.json"
+    }]
+  }
+}

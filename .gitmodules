@@ -1,0 +1,3 @@
+[submodule "syntaxes/bird-tm-grammar"]
+	path = syntaxes/bird-tm-grammar
+	url = https://github.com/bird-chinese-community/BIRD-tm-language-grammar.git
