@@ -11,55 +11,39 @@ on:
     paths:
       - "package.json"
       - ".github/workflows/vsx-release.yml"
-  # Allow manual trigger
+  # Allow manual trigger with force deploy option
   workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: "Force Deploy?"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      environment:
+        description: "Deploy to environment"
+        required: false
+        default: "production"
+        type: choice
+        options:
+          - "production"
+          - "staging"
 
 jobs:
-  version-check:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  # Build job - runs on all events
+  test-and-build:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
-      version-changed: ${{ steps.version.outputs.changed }}
       tag-name: ${{ steps.version.outputs.tag-name }}
+      should-deploy: ${{ steps.deploy-check.outputs.should-deploy }}
     steps:
       - name: Check out git repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # Need at least 2 commits to compare
-
-      - name: Get version from package.json
-        id: version
-        run: |
-          # Get current version
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          echo "tag-name=v$CURRENT_VERSION" >> $GITHUB_OUTPUT
-
-          # Check if version changed (only on push, not PR)
-          if [ "${{ github.event_name }}" = "push" ]; then
-            # Get previous version from the last commit
-            git checkout HEAD~1
-            PREVIOUS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.0.0")
-            git checkout HEAD
-            
-            if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
-              echo "changed=true" >> $GITHUB_OUTPUT
-              echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
-            else
-              echo "changed=false" >> $GITHUB_OUTPUT
-              echo "Version unchanged: $CURRENT_VERSION"
-            fi
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-          fi
-
-  # Build job - runs on all events
-  test-and-build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out git repository
-        uses: actions/checkout@v4
+          fetch-depth: 2 # Need at least 2 commits to compare for push events
 
       - uses: pnpm/action-setup@v3
         with:
@@ -69,6 +53,59 @@ jobs:
         with:
           node-version: 22
           cache: "pnpm"
+
+      - name: Get version info
+        id: version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "tag-name=v$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+
+      - name: Check deployment conditions
+        id: deploy-check
+        run: |
+          SHOULD_DEPLOY="false"
+
+          # Handle different trigger types
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Manual trigger
+            if [ "${{ github.event.inputs.force_deploy }}" = "true" ]; then
+              SHOULD_DEPLOY="true"
+              echo "🚀 Force deploy enabled - will deploy regardless of version changes"
+            else
+              # Check if this version already has a tag
+              CURRENT_VERSION=$(node -p "require('./package.json').version")
+              if git tag -l "v$CURRENT_VERSION" | grep -q "v$CURRENT_VERSION"; then
+                SHOULD_DEPLOY="false"
+                echo "⚠️  Version v$CURRENT_VERSION already exists. Use force deploy to redeploy."
+              else
+                SHOULD_DEPLOY="true"
+                echo "✅ New version detected, will proceed with deployment"
+              fi
+            fi
+          elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            # Auto trigger on main branch push
+            # Check if version changed in the last commit
+            git checkout HEAD~1 2>/dev/null || true
+            PREVIOUS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.0.0")
+            git checkout HEAD
+            
+            CURRENT_VERSION=$(node -p "require('./package.json').version")
+            if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+              SHOULD_DEPLOY="true"
+              echo "✅ Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
+            else
+              SHOULD_DEPLOY="false"
+              echo "ℹ️  Version unchanged: $CURRENT_VERSION"
+            fi
+          else
+            # PR or other events - no deployment
+            SHOULD_DEPLOY="false"
+            echo "ℹ️  No deployment for ${{ github.event_name }} event"
+          fi
+
+          echo "should-deploy=$SHOULD_DEPLOY" >> $GITHUB_OUTPUT
 
       - name: Install submodules
         run: pnpm run init-submodules
@@ -87,10 +124,10 @@ jobs:
           name: extension-vsix
           path: "*.vsix"
 
-  # Deploy job - only runs when version changed on main branch
+  # Deploy job - only runs when deployment conditions are met
   deploy:
-    needs: [version-check, test-and-build]
-    if: needs.version-check.outputs.version-changed == 'true'
+    needs: [test-and-build]
+    if: needs.test-and-build.outputs.should-deploy == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check out git repository
@@ -120,6 +157,22 @@ jobs:
           echo "display-name=$EXTENSION_DISPLAY_NAME" >> $GITHUB_OUTPUT
           echo "description=$EXTENSION_DESCRIPTION" >> $GITHUB_OUTPUT
 
+      - name: Set deployment context
+        id: deploy-context
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ github.event.inputs.force_deploy }}" = "true" ]; then
+              echo "context=🚀 Force Deploy (Manual)" >> $GITHUB_OUTPUT
+              echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+            else
+              echo "context=📋 Manual Deploy" >> $GITHUB_OUTPUT
+              echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "context=🔄 Auto Deploy (Version Change)" >> $GITHUB_OUTPUT
+            echo "environment=production" >> $GITHUB_OUTPUT
+          fi
+
       - name: Publish to Open VSX Registry
         uses: HaaLeo/publish-vscode-extension@v2
         id: publishToOpenVSX
@@ -139,7 +192,10 @@ jobs:
         id: release-notes
         run: |
           # Create release notes from recent commits
-          echo "## What's New in v${{ needs.version-check.outputs.version }}" > release_notes.md
+          echo "## What's New in v${{ needs.test-and-build.outputs.version }}" > release_notes.md
+          echo "" >> release_notes.md
+          echo "**Deployment Context**: ${{ steps.deploy-context.outputs.context }}" >> release_notes.md
+          echo "**Environment**: ${{ steps.deploy-context.outputs.environment }}" >> release_notes.md
           echo "" >> release_notes.md
 
           # Get commits since last tag (or all commits if no previous tag)
@@ -173,12 +229,12 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.version-check.outputs.tag-name }}
-          name: "${{ steps.extension-info.outputs.display-name }} v${{ needs.version-check.outputs.version }}"
+          tag_name: ${{ needs.test-and-build.outputs.tag-name }}
+          name: "${{ steps.extension-info.outputs.display-name }} v${{ needs.test-and-build.outputs.version }}"
           body: ${{ steps.release-notes.outputs.content }}
           files: "*.vsix"
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.deploy-context.outputs.environment != 'production' }}
           generate_release_notes: true # This adds automatic GitHub-generated notes as well
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -186,7 +242,7 @@ jobs:
       - name: Update GitHub Release with Marketplace Links
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.version-check.outputs.tag-name }}
+          tag_name: ${{ needs.test-and-build.outputs.tag-name }}
           append_body: true
           body: |
 
@@ -196,6 +252,6 @@ jobs:
             - **Open VSX Registry**: [View on Open VSX](https://open-vsx.org/extension/${{ steps.extension-info.outputs.name }})
 
             ---
-            *This release was automatically created when the version in package.json was updated to v${{ needs.version-check.outputs.version }}*
+            *This release was created via ${{ steps.deploy-context.outputs.context }} for v${{ needs.test-and-build.outputs.version }}*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
