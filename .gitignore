@@ -4,3 +4,10 @@ node_modules
 *.md
 !README.md
 !CHANGELOG.md
+
+node_modules/**
+.npm/**
+*.vsix
+package-lock.json
+*.lock
+pnpm-lock.*

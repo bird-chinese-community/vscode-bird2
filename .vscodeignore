@@ -1,10 +1,31 @@
 .vscode/**
 .vscode-test/**
+
 .gitignore
-vsc-extension-quickstart.md
+.gitmodules
+.git/**
 
 *.md
 !README.md
 !CHANGELOG.md
 
 **/sample/**
+**/README.md
+**/README.zh-CN.md
+syntaxes/bird-tm-grammar/LICENSE.*
+
+node_modules/**
+.npm/**
+*.vsix
+package-lock.json
+*.lock
+pnpm-lock.*
+
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+*.swp
+*.swo
+*~

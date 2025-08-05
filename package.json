@@ -31,6 +31,17 @@
   "categories": [
     "Programming Languages"
   ],
+  "scripts": {
+    "update-grammar": "git submodule update --remote syntaxes/bird-tm-grammar",
+    "init-submodules": "git submodule update --init --recursive",
+    "package": "vsce package",
+    "publish": "vsce publish",
+    "prepublish": "npm run init-submodules",
+    "prepackage": "npm run init-submodules"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^2.19.0"
+  },
   "icon": "assets/favicon-256.png",
   "galleryBanner": {
     "color": "#1e1e1e",
