@@ -13,10 +13,10 @@
   "homepage": "https://github.com/bird-chinese-community/BIRD-tm-language-grammar",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bird-chinese-community/vscode-bird2-conf"
+    "url": "https://github.com/bird-chinese-community/vscode-bird2"
   },
   "bugs": {
-    "url": "https://github.com/bird-chinese-community/vscode-bird2-conf/issues"
+    "url": "https://github.com/bird-chinese-community/vscode-bird2/issues"
   },
   "keywords": [
     "bird2",
