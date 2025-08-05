@@ -36,8 +36,8 @@
     "init-submodules": "git submodule update --init --recursive",
     "package": "vsce package",
     "publish": "vsce publish",
-    "prepublish": "npm run init-submodules",
-    "prepackage": "npm run init-submodules"
+    "prepublish": "pnpm run init-submodules",
+    "prepackage": "pnpm run init-submodules"
   },
   "devDependencies": {
     "@vscode/vsce": "^3.6.0"

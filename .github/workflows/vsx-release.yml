@@ -61,21 +61,22 @@ jobs:
       - name: Check out git repository
         uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v3
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install submodules
-        run: npm run init-submodules
+        run: pnpm run init-submodules
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Package extension
         run: |
-          npm install -g @vscode/vsce
+          pnpm install -g @vscode/vsce
           vsce package
 
       - name: Upload VSIX artifact

@@ -10,4 +10,3 @@ node_modules/**
 *.vsix
 package-lock.json
 *.lock
-pnpm-lock.*
