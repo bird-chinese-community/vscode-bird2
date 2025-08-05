@@ -2,8 +2,8 @@
   "name": "vscode-bird2-conf",
   "displayName": "BIRD2 Configuration",
   "description": "Syntax highlighting for BIRD2 routing daemon configuration files",
-  "version": "0.0.1-beta.1",
-  "publisher": "bird-chinese-community",
+  "version": "0.0.1",
+  "publisher": "BIRDCC",
   "author": {
     "name": "BIRD Chinese Community",
     "email": "dev-bird@xmsl.dev",
