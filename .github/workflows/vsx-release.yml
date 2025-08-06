@@ -46,7 +46,7 @@ jobs:
         id: version-check
         env:
           FORCE_DEPLOY: ${{ github.event.inputs.force_deploy }}
-        run: node scripts/check-version.js
+        run: node scripts/check-version.mjs
 
       - name: Package extension
         run: vsce package
@@ -97,7 +97,7 @@ jobs:
         id: release-notes
         env:
           DEPLOY_REASON: ${{ needs.check-and-build.outputs.deploy-reason }}
-        run: tsx scripts/generate-release-notes.ts
+        run: node scripts/generate-release-notes.mjs
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
