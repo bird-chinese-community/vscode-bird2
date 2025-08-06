@@ -1,187 +1,55 @@
-name: VSX Release and GitHub Release
+name: VSCode Extension Release
 
 on:
   push:
     branches: ["main"]
-    paths:
-      - "package.json"
-      - ".github/workflows/vsx-release.yml"
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "package.json"
-      - ".github/workflows/vsx-release.yml"
-  # Allow manual trigger with force deploy option
+    paths: ["package.json", ".github/workflows/**"]
   workflow_dispatch:
     inputs:
       force_deploy:
         description: "Force Deploy?"
-        required: false
         default: "false"
         type: choice
-        options:
-          - "false"
-          - "true"
-      environment:
-        description: "Deploy to environment"
-        required: false
-        default: "production"
-        type: choice
-        options:
-          - "production"
-          - "staging"
+        options: ["false", "true"]
 
 jobs:
-  # Build job - runs on all events
-  test-and-build:
+  check-and-build:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      tag-name: ${{ steps.version.outputs.tag-name }}
-      should-deploy: ${{ steps.deploy-check.outputs.should-deploy }}
-    steps:
-      - name: Check out git repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2 # Need at least 2 commits to compare for push events
+      should-deploy: ${{ steps.version-check.outputs.should-deploy }}
+      version: ${{ steps.version-check.outputs.version }}
+      tag-name: ${{ steps.version-check.outputs.tag-name }}
+      extension-name: ${{ steps.version-check.outputs.extension-name }}
+      display-name: ${{ steps.version-check.outputs.display-name }}
+      deploy-reason: ${{ steps.version-check.outputs.deploy-reason }}
 
-      - uses: pnpm/action-setup@v3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Need full history for release notes
+
+      - uses: pnpm/action-setup@v4
         with:
           version: 10
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "pnpm"
 
-      - name: Get version info
-        id: version
-        run: |
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          echo "tag-name=v$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          echo "Current version: $CURRENT_VERSION"
-
-      - name: Check deployment conditions
-        id: deploy-check
-        run: |
-          SHOULD_DEPLOY="false"
-
-          # Extract extension info from package.json
-          PUBLISHER=$(node -p "require('./package.json').publisher" 2>/dev/null || echo "")
-          EXTENSION_NAME=$(node -p "require('./package.json').name" 2>/dev/null || echo "")
-          CURRENT_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.0.0")
-
-          if [ -z "$PUBLISHER" ] || [ -z "$EXTENSION_NAME" ]; then
-            echo "❌ Could not extract publisher or extension name from package.json"
-            echo "should-deploy=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          echo "📦 Extension: $PUBLISHER.$EXTENSION_NAME"
-          echo "🔖 Current version: $CURRENT_VERSION"
-
-          get_openvsx_version() {
-            node -e "
-              (async () => {
-                const maxRetries = 3;
-                const retryDelay = 1000; // 1 second
-                
-                for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                  try {
-                    console.error(\`🔍 Fetching Open VSX version (attempt \${attempt}/\${maxRetries})...\`);
-                    
-                    const response = await fetch('https://open-vsx.org/api/$PUBLISHER/$EXTENSION_NAME', {
-                      timeout: 10000 // 10 seconds timeout
-                    });
-                    
-                    if (response.ok) {
-                      const data = await response.json();
-                      console.log(data.version || '0.0.0');
-                      return;
-                    } else {
-                      throw new Error(\`HTTP \${response.status}: \${response.statusText}\`);
-                    }
-                  } catch (error) {
-                    console.error(\`❌ Attempt \${attempt} failed: \${error.message}\`);
-                    
-                    if (attempt === maxRetries) {
-                      console.error('🚫 All retry attempts exhausted, falling back to 0.0.0');
-                      console.log('0.0.0');
-                      return;
-                    }
-                    
-                    console.error(\`⏳ Waiting \${retryDelay}ms before retry...\`);
-                    await new Promise(resolve => setTimeout(resolve, retryDelay));
-                  }
-                }
-              })();
-            " 2>/dev/null || echo "0.0.0"
-          }
-
-          # Handle different trigger types
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            # Manual trigger
-            if [ "${{ github.event.inputs.force_deploy }}" = "true" ]; then
-              SHOULD_DEPLOY="true"
-              echo "🚀 Force deploy enabled - will deploy regardless of version changes"
-            else
-              # Check if this version already exists on Open VSX
-              OPENVSX_VERSION=$(get_openvsx_version)
-              echo "🌐 Open VSX version: $OPENVSX_VERSION"
-              
-              if [ "$CURRENT_VERSION" = "$OPENVSX_VERSION" ]; then
-                SHOULD_DEPLOY="false"
-                echo "⚠️  Version $CURRENT_VERSION already exists on Open VSX. Use force deploy to redeploy."
-              else
-                SHOULD_DEPLOY="true"
-                echo "✅ New version detected ($CURRENT_VERSION vs $OPENVSX_VERSION), will proceed with deployment"
-              fi
-            fi
-          elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            # Auto trigger on main branch push
-            
-            # Get version from previous commit
-            git checkout HEAD~1 2>/dev/null || true
-            PREVIOUS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.0.0")
-            git checkout HEAD
-            
-            if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
-              # Version changed, also check against Open VSX
-              OPENVSX_VERSION=$(get_openvsx_version)
-              echo "🌐 Open VSX version: $OPENVSX_VERSION"
-              echo "📈 Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
-              
-              if [ "$CURRENT_VERSION" != "$OPENVSX_VERSION" ]; then
-                SHOULD_DEPLOY="true"
-                echo "✅ Version is different from Open VSX ($CURRENT_VERSION vs $OPENVSX_VERSION)"
-              else
-                SHOULD_DEPLOY="false"
-                echo "⚠️  Version $CURRENT_VERSION already exists on Open VSX"
-              fi
-            else
-              SHOULD_DEPLOY="false"
-              echo "ℹ️  Version unchanged: $CURRENT_VERSION"
-            fi
-            
-          else
-            # PR or other events - no deployment
-            SHOULD_DEPLOY="false"
-            echo "ℹ️  No deployment for ${{ github.event_name }} event"
-          fi
-
-          echo "should-deploy=$SHOULD_DEPLOY" >> $GITHUB_OUTPUT
-
-      - name: Install submodules
-        run: pnpm run init-submodules
-
       - name: Install dependencies
-        run: pnpm install
+        run: |
+          pnpm install
+          pnpm add -g @vscode/vsce
+
+      - name: Check version and deployment
+        id: version-check
+        env:
+          FORCE_DEPLOY: ${{ github.event.inputs.force_deploy }}
+        run: node scripts/check-version.js
 
       - name: Package extension
-        run: |
-          pnpm install -g @vscode/vsce
-          vsce package
+        run: vsce package
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
@@ -189,54 +57,27 @@ jobs:
           name: extension-vsix
           path: "*.vsix"
 
-  # Deploy job - only runs when deployment conditions are met
   deploy:
-    needs: [test-and-build]
-    if: needs.test-and-build.outputs.should-deploy == 'true'
+    needs: [check-and-build]
+    if: needs.check-and-build.outputs.should-deploy == 'true'
     runs-on: ubuntu-latest
-    steps:
-      - name: Check out git repository
-        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Install tsx
+        run: npm install -g tsx
 
       - name: Download VSIX artifact
         uses: actions/download-artifact@v4
         with:
           name: extension-vsix
-
-      - name: Get extension info
-        id: extension-info
-        run: |
-          # Extract extension name and version from package.json
-          EXTENSION_NAME=$(node -p "require('./package.json').name")
-          EXTENSION_VERSION=$(node -p "require('./package.json').version")
-          EXTENSION_DISPLAY_NAME=$(node -p "require('./package.json').displayName || require('./package.json').name")
-          EXTENSION_DESCRIPTION=$(node -p "require('./package.json').description || ''")
-
-          echo "name=$EXTENSION_NAME" >> $GITHUB_OUTPUT
-          echo "version=$EXTENSION_VERSION" >> $GITHUB_OUTPUT
-          echo "display-name=$EXTENSION_DISPLAY_NAME" >> $GITHUB_OUTPUT
-          echo "description=$EXTENSION_DESCRIPTION" >> $GITHUB_OUTPUT
-
-      - name: Set deployment context
-        id: deploy-context
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            if [ "${{ github.event.inputs.force_deploy }}" = "true" ]; then
-              echo "context=🚀 Force Deploy (Manual)" >> $GITHUB_OUTPUT
-              echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
-            else
-              echo "context=📋 Manual Deploy" >> $GITHUB_OUTPUT
-              echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo "context=🔄 Auto Deploy (Version Change)" >> $GITHUB_OUTPUT
-            echo "environment=production" >> $GITHUB_OUTPUT
-          fi
 
       - name: Publish to Open VSX Registry
         uses: HaaLeo/publish-vscode-extension@v2
@@ -244,79 +85,28 @@ jobs:
         with:
           pat: ${{ secrets.OPEN_VSX_PUBLISH_TOKEN }}
 
-      - name: Publish to Visual Studio Marketplace
+      - name: Publish to VS Code Marketplace
         uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.VS_PUBLISH_TOKEN }}
           skipDuplicate: true
           registryUrl: https://marketplace.visualstudio.com
-          yarn: false
           extensionFile: ${{ steps.publishToOpenVSX.outputs.vsixPath }}
 
-      - name: Generate Release Notes
+      - name: Generate release notes
         id: release-notes
-        run: |
-          # Create release notes from recent commits
-          echo "## What's New in v${{ needs.test-and-build.outputs.version }}" > release_notes.md
-          echo "" >> release_notes.md
-          echo "**Deployment Context**: ${{ steps.deploy-context.outputs.context }}" >> release_notes.md
-          echo "**Environment**: ${{ steps.deploy-context.outputs.environment }}" >> release_notes.md
-          echo "" >> release_notes.md
-
-          # Get commits since last tag (or all commits if no previous tag)
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-
-          if [ -n "$LAST_TAG" ]; then
-            echo "### Changes since $LAST_TAG:" >> release_notes.md
-            git log --pretty=format:"- %s" "$LAST_TAG"..HEAD >> release_notes.md
-          else
-            echo "### Initial release changes:" >> release_notes.md
-            git log --pretty=format:"- %s" >> release_notes.md
-          fi
-
-          echo "" >> release_notes.md
-          echo "## Installation" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "### VS Code Marketplace" >> release_notes.md
-          echo "Install directly from VS Code marketplace or use:" >> release_notes.md
-          echo '```bash' >> release_notes.md
-          echo "code --install-extension ${{ steps.extension-info.outputs.name }}" >> release_notes.md
-          echo '```' >> release_notes.md
-          echo "" >> release_notes.md
-          echo "### Open VSX Registry" >> release_notes.md
-          echo "Available on [Open VSX Registry](https://open-vsx.org/extension/${{ steps.extension-info.outputs.name }})" >> release_notes.md
-
-          # Set multiline output for GitHub Actions
-          echo "content<<EOF" >> $GITHUB_OUTPUT
-          cat release_notes.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+        env:
+          DEPLOY_REASON: ${{ needs.check-and-build.outputs.deploy-reason }}
+        run: tsx scripts/generate-release-notes.ts
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.test-and-build.outputs.tag-name }}
-          name: "${{ steps.extension-info.outputs.display-name }} v${{ needs.test-and-build.outputs.version }}"
+          tag_name: ${{ needs.check-and-build.outputs.tag-name }}
+          name: ${{ steps.release-notes.outputs.title }}
           body: ${{ steps.release-notes.outputs.content }}
           files: "*.vsix"
           draft: false
-          prerelease: ${{ steps.deploy-context.outputs.environment != 'production' }}
-          generate_release_notes: true # This adds automatic GitHub-generated notes as well
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update GitHub Release with Marketplace Links
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.test-and-build.outputs.tag-name }}
-          append_body: true
-          body: |
-
-            ## 📦 Published Packages
-
-            - **VS Code Marketplace**: [Install Extension](https://marketplace.visualstudio.com/items?itemName=${{ steps.extension-info.outputs.name }})
-            - **Open VSX Registry**: [View on Open VSX](https://open-vsx.org/extension/${{ steps.extension-info.outputs.name }})
-
-            ---
-            *This release was created via ${{ steps.deploy-context.outputs.context }} for v${{ needs.test-and-build.outputs.version }}*
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
