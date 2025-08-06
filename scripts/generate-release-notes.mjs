@@ -13,8 +13,11 @@ async function generateReleaseNotes() {
     const isForceMode = deployReason === "force";
 
     // match the version section in CHANGELOG.md
-    const match = changelogRaw.match(new RegExp(`## ${version.replace(/\./g, "\\.")}\\n+([\\s\\S]+?)(?=\\n## |$)`));
-
+    const pattern = new RegExp(
+      `^##\\s+\\[?${version.replace(/\./g, "\\.")}\\]?[^\\n]*\\n+([\\s\\S]+?)(?=^##\\s+\\[?\\d|\\Z)`,
+      "m"
+    );
+    const match = changelogRaw.match(pattern);
     const changes = match?.[1].trim() || "- No changes found.";
 
     let notes = `## What's New in v${version}\n\n`;
