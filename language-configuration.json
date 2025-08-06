@@ -1,34 +1,99 @@
 {
     "comments": {
-        "lineComment": "#"
+        "lineComment": "#",
+        "blockComment": [
+            "/*",
+            "*/"
+        ]
     },
     "brackets": [
-        ["{", "}"],
-        ["[", "]"],
-        ["(", ")"]
+        [
+            "{",
+            "}"
+        ],
+        [
+            "[",
+            "]"
+        ],
+        [
+            "(",
+            ")"
+        ]
     ],
     "autoClosingPairs": [
-        ["{", "}"],
-        ["[", "]"],
-        ["(", ")"],
-        ["\"", "\""],
-        ["'", "'"]
+        {
+            "open": "{",
+            "close": "}"
+        },
+        {
+            "open": "[",
+            "close": "]"
+        },
+        {
+            "open": "(",
+            "close": ")"
+        },
+        {
+            "open": "\"",
+            "close": "\"",
+            "notIn": [
+                "string"
+            ]
+        },
+        {
+            "open": "'",
+            "close": "'",
+            "notIn": [
+                "string",
+                "comment"
+            ]
+        }
     ],
     "surroundingPairs": [
-        ["{", "}"],
-        ["[", "]"],
-        ["(", ")"],
-        ["\"", "\""],
-        ["'", "'"]
+        [
+            "{",
+            "}"
+        ],
+        [
+            "[",
+            "]"
+        ],
+        [
+            "(",
+            ")"
+        ],
+        [
+            "\"",
+            "\""
+        ],
+        [
+            "'",
+            "'"
+        ]
     ],
     "indentationRules": {
         "increaseIndentPattern": "^.*\\{[^}\"']*$",
         "decreaseIndentPattern": "^\\s*\\}"
     },
+    "onEnterRules": [
+        {
+            "beforeText": "^.*\\{[^}\"']*$",
+            "afterText": "^\\s*\\}",
+            "action": {
+                "indent": "indentOutdent"
+            }
+        },
+        {
+            "beforeText": "^.*\\{[^}\"']*$",
+            "action": {
+                "indent": "indent"
+            }
+        }
+    ],
     "folding": {
         "markers": {
-            "start": "^\\s*#\\s*region\\b",
-            "end": "^\\s*#\\s*endregion\\b"
+            "start": "^\\s*#\\s*region\\b|^.*\\{\\s*$",
+            "end": "^\\s*#\\s*endregion\\b|^\\s*\\}"
         }
     }
 }
