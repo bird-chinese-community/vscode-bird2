@@ -16,3 +16,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## 0.0.3
 
 - Update workflow for auto publish to Open VSX and VS Marketplace
+
+## 0.0.4
+
+- Update workflow for auto publish
