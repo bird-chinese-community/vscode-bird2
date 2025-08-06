@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { readFile } from "node:fs/promises";
+import fs from "node:fs";
 
 async function checkVersion() {
   try {
@@ -32,26 +33,30 @@ async function checkVersion() {
     // Determine if we should deploy
     const shouldDeploy = version !== publishedVersion;
     const isForceMode = process.env.FORCE_DEPLOY === "true";
+    const outputFile = process.env.GITHUB_OUTPUT;
+    if (!outputFile) {
+      throw new Error("GITHUB_OUTPUT environment variable not set.");
+    }
 
     if (isForceMode) {
       console.log("🚀 Force deploy mode enabled");
-      console.log("::set-output name=should-deploy::true");
-      console.log("::set-output name=deploy-reason::force");
+      fs.appendFileSync(outputFile, 'should-deploy=true\n');
+      fs.appendFileSync(outputFile, 'deploy-reason=force\n');
     } else if (shouldDeploy) {
       console.log(`✅ Version changed: ${publishedVersion} → ${version}`);
-      console.log("::set-output name=should-deploy::true");
-      console.log("::set-output name=deploy-reason::version-change");
+      fs.appendFileSync(outputFile, 'should-deploy=true\n');
+      fs.appendFileSync(outputFile, 'deploy-reason=version-change\n');
     } else {
       console.log(`ℹ️  No deployment needed (version ${version} already exists)`);
-      console.log("::set-output name=should-deploy::false");
-      console.log("::set-output name=deploy-reason::no-change");
+      fs.appendFileSync(outputFile, 'should-deploy=false\n');
+      fs.appendFileSync(outputFile, 'deploy-reason=no-change\n');
     }
 
     // Set additional outputs for other jobs
-    console.log(`::set-output name=version::${version}`);
-    console.log(`::set-output name=tag-name::v${version}`);
-    console.log(`::set-output name=extension-name::${name}`);
-    console.log(`::set-output name=display-name::${pkg.displayName || name}`);
+    fs.appendFileSync(outputFile, `version=${version}\n`);
+    fs.appendFileSync(outputFile, `tag-name=v${version}\n`);
+    fs.appendFileSync(outputFile, `extension-name=${name}\n`);
+    fs.appendFileSync(outputFile, `display-name=${pkg.displayName || name}\n`);
   } catch (error) {
     console.error("❌ Error checking version:", error);
     process.exit(1);

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { readFile } from "node:fs/promises";
+import { appendFileSync } from "node:fs";
 
 async function generateReleaseNotes() {
   try {
@@ -32,12 +33,16 @@ async function generateReleaseNotes() {
     notes += `### VS Code Marketplace\nAvailable on [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=${publisher}.${name})\n\n`;
     notes += `### Open VSX Registry\nAvailable on [Open VSX Registry](https://open-vsx.org/extension/${publisher}/${name})\n`;
 
-    const delimiter = "EOF";
-    console.log(`::set-output name=content<<${delimiter}`);
+    console.log("✅ Release notes generated successfully");
     console.log(notes);
-    console.log(delimiter);
 
-    console.log(`::set-output name=title::${displayName} v${version}`);
+    const outputFile = process.env.GITHUB_OUTPUT;
+    if (!outputFile) {
+      throw new Error("GITHUB_OUTPUT environment variable not set.");
+    }
+
+    appendFileSync(outputFile, `title=${displayName} v${version}\n`);
+    appendFileSync(outputFile, `content<<EOF\n${notes}\nEOF\n`);
   } catch (err) {
     console.error("❌ Error generating release notes:", err);
     process.exit(1);

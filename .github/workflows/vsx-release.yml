@@ -3,7 +3,7 @@ name: VSCode Extension Release
 on:
   push:
     branches: ["main"]
-    paths: ["package.json", ".github/workflows/**"]
+    paths: ["package.json", ".github/workflows/**", "scripts/**"]
   workflow_dispatch:
     inputs:
       force_deploy:
