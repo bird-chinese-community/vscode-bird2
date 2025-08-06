@@ -10,3 +10,9 @@ node_modules/**
 *.vsix
 package-lock.json
 *.lock
+
+.DS_Store
+.idea/
+
+*.log
+*.tmp
