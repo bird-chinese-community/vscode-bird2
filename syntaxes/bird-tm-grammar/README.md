@@ -1,5 +1,32 @@
 # BIRD2 Configuration Language
 
+<div align="center">
+
+![Preview](.github/assets/bird2-grammar-preview.jpg)
+
+English | [简体中文](README.zh-CN.md)
+
+[![TextMate Grammar](https://img.shields.io/github/v/tag/bird-chinese-community/bird-tm-language-grammar?filter=tm-v*&label=TextMate%20grammar)](https://github.com/bird-chinese-community/bird-tm-language-grammar/releases?q=tm-v) [![Vim Syntax](https://img.shields.io/github/v/tag/bird-chinese-community/bird-tm-language-grammar?filter=vim-v*&label=Vim%20syntax)](https://github.com/bird-chinese-community/bird-tm-language-grammar/releases?q=Vim%20Syntax)
+
+</div>
+
+## Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [Introduction](#introduction)
+- [Why This Project](#why-this-project)
+- [Try It Live](#try-it-live)
+- [Editors \& IDE Support](#editors-ide-support)
+  - [VSCode](#vscode)
+  - [Vim](#vim)
+  - [Jetbrains (TextMate Bundles)](#jetbrains-textmate-bundles)
+- [Project Status](#project-status)
+- [Community Adoption Evidence](#community-adoption-evidence)
+  - [GitHub Usage Statistics](#github-usage-statistics)
+  - [Production Deployment at Internet Scale](#production-deployment-at-internet-scale)
+- [Contributors](#contributors)
+- [License](#license)
+
 ## Introduction
 
 > **BIRD** (BIRD Internet Routing Daemon)  
@@ -19,20 +46,77 @@ However, these do not accurately represent the complex grammar of BIRD2.
 
 To address this issue, the **BIRD Chinese Community** has officially open-sourced a TextMate-based syntax grammar for BIRD2. Our goal is to improve developer experience and foster broader ecosystem support.
 
-## Project Status
-
-- Pull requests have been submitted to upstream projects:
-
-  - [GitHub Linguist #7513](https://github.com/github/linguist/pull/7513)
-  - [Shiki #149](https://github.com/shikijs/textmate-grammars-themes/pull/149)
-
-- 🚧 A VSCode plugin with full syntax highlighting and formatting support is actively under development.
-  - 👉 [Join the closed beta on Telegram](https://t.me/bird_cnn/23) (Chinese only)
-
 ## Try It Live
 
 - 🌐 **Playground** (via Shiki preview):
   [https://deploy-preview-149--textmate-grammars-themes.netlify.app/?theme=ayu-dark\&grammar=bird2](https://deploy-preview-149--textmate-grammars-themes.netlify.app/?theme=ayu-dark&grammar=bird2)
+
+## Editors & IDE Support
+
+### VSCode
+
+<div align="center">
+
+![VSCode Syntax Highlighting Preview](.github/assets/vscode-bird2-preview.jpg)
+
+[![VS Code Marketplace](https://img.shields.io/badge/VS%20Code%20Marketplace-Install-blue?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=BIRDCC.vscode-bird2-conf) [![Open VSX Registry](https://img.shields.io/badge/Open%20VSX%20Registry-Install-blue?logo=eclipseide)](https://open-vsx.org/extension/BIRDCC/vscode-bird2-conf)
+
+</div>
+
+- Install the VSCode extension from [Open VSX Registry](https://open-vsx.org/extension/BIRDCC/vscode-bird2-conf) / [VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=BIRDCC.vscode-bird2-conf).
+- Open any BIRD2 configuration file and enjoy syntax highlighting.
+
+### Vim
+
+<div align="center">
+
+![Vim Syntax Highlighting Preview](.github/assets/bird2-grammar-vim-preview.jpg)
+
+</div>
+
+> [!NOTE]
+> We recommend using VSCode for the best experience.
+>
+> Note: We are still in the testing phase for our support for Vim syntax highlighting.
+
+1. Clone this repository: `git clone https://github.com/bird-chinese-community/bird-tm-language-grammar.git`.
+2. Quick install: `bash scripts/install.sh` (installs Vim and Neovim)
+   - Only Neovim: `bash scripts/install.sh --neovim`
+   - Only Vim: `bash scripts/install.sh --vim`
+   Or manual copy:
+   - Vim: `cp grammars/bird2.syntax.vim ~/.vim/syntax/bird2.vim && cp -r misc/vim/ftdetect ~/.vim/`
+   - Neovim: `cp grammars/bird2.syntax.vim ~/.config/nvim/syntax/bird2.vim && cp -r misc/nvim/plugin ~/.config/nvim/`
+3. Open `sample/basic.conf` and verify highlighting. Optional: use `:verbose set ft?` to confirm `filetype=bird2`.
+
+### Jetbrains (TextMate Bundles)
+
+<div align="center">
+
+![JetBrains IDEA Syntax Highlighting Preview](.github/assets/jetbrains-idea-bird2-preview.jpg)
+
+</div>
+
+> [!NOTE]
+> We recommend VSCode for the best experience, but JetBrains with TextMate Bundles works well for syntax highlighting.
+
+1. Prepare the language pack
+   a) Open https://open-vsx.org/extension/BIRDCC/vscode-bird2-conf ▸ Resources (lower right) ▸ Download the latest `.vsix` package;
+   b) Unzip the `.vsix` file using any archiver;
+   c) In the unzipped folder, locate the directory containing `package.json`, keep this path for the next step;
+2. Open IntelliJ IDEA: Settings/Preferences ▸ Editor ▸ TextMate Bundles;
+3. Click ➕ (Add) and select the directory from step 1(c);
+4. Scroll the language list, confirm that `bird2` appears and check the box;
+5. Follow prompts to restart the IDE.
+
+## Project Status
+
+- Pull requests have been submitted to upstream projects:
+
+  - [ ] [GitHub Linguist #7513](https://github.com/github/linguist/pull/7513)
+  - [ ] [Shiki #149](https://github.com/shikijs/textmate-grammars-themes/pull/149)
+
+- 🚧 A VSCode plugin with full syntax highlighting and formatting support is actively under development.
+  - 👉 [Join the closed beta on Telegram](https://t.me/bird_cnn/23) (Chinese only)
 
 ## Community Adoption Evidence
 

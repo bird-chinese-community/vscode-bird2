@@ -1,5 +1,30 @@
 ## BIRD2 Configuration Language
 
+<div align="center">
+
+![Preview](.github/assets/bird2-grammar-preview.jpg)
+
+简体中文 | [English](README.md)
+
+[![TextMate Grammar](https://img.shields.io/github/v/tag/bird-chinese-community/bird-tm-language-grammar?filter=tm-v*&label=TextMate%20grammar)](https://github.com/bird-chinese-community/bird-tm-language-grammar/releases?q=tm-v) [![Vim Syntax](https://img.shields.io/github/v/tag/bird-chinese-community/bird-tm-language-grammar?filter=vim-v*&label=Vim%20syntax)](https://github.com/bird-chinese-community/bird-tm-language-grammar/releases?q=Vim%20Syntax)
+
+</div>
+
+### 目录
+
+- [BIRD2 Configuration Language](#bird2-configuration-language)
+  - [目录](#目录)
+  - [项目背景](#项目背景)
+  - [项目意义](#项目意义)
+  - [在线体验](#在线体验)
+  - [编辑器与 IDE 支持](#编辑器与-ide-支持)
+    - [VSCode](#vscode)
+    - [Vim 导入](#vim-导入)
+    - [JetBrains（TextMate Bundles）](#jetbrains-textmate-bundles)
+  - [进展公示](#进展公示)
+  - [贡献者致谢](#贡献者致谢)
+  - [许可协议](#许可协议)
+
 ### 项目背景
 
 > **BIRD**（BIRD Internet Routing Daemon）  
@@ -17,6 +42,64 @@
 
 为此，**BIRD 中文社区** 正式开源了基于 TextMate 的 BIRD2 语法规范，致力于提升开发体验并推动生态建设。
 
+### 在线体验
+
+- 🌐 **Playground**（通过 Shiki 预览）：  
+  [https://deploy-preview-149--textmate-grammars-themes.netlify.app/?theme=ayu-dark\&grammar=bird2](https://deploy-preview-149--textmate-grammars-themes.netlify.app/?theme=ayu-dark&grammar=bird2)
+
+### 编辑器与 IDE 支持
+
+#### VSCode
+
+![VSCode 语法高亮 预览](.github/assets/vscode-bird2-preview.jpg)
+
+[![VS Code Marketplace](https://img.shields.io/badge/VS%20Code%20Marketplace-Install-blue?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=BIRDCC.vscode-bird2-conf) [![Open VSX Registry](https://img.shields.io/badge/Open%20VSX%20Registry-Install-blue?logo=eclipseide)](https://open-vsx.org/extension/BIRDCC/vscode-bird2-conf)
+
+- 安装 VSCode 扩展：[Open VSX Registry](https://open-vsx.org/extension/BIRDCC/vscode-bird2-conf) / [VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=BIRDCC.vscode-bird2-conf)。
+- 打开任意 BIRD2 配置文件并享受语法高亮。
+
+#### Vim 导入
+
+<div align="center">
+
+![Vim 语法高亮 预览](.github/assets/bird2-grammar-vim-preview.jpg)
+
+</div>
+
+> [!NOTE]
+> 我们推荐使用 VSCode 以获得最佳体验。
+>
+> 请注意：Vim 语法高亮文件仍处于 Beta 阶段，欢迎反馈。
+
+1. 克隆此仓库：`git clone https://github.com/bird-chinese-community/bird-tm-language-grammar.git`。
+2. 一键安装：`bash scripts/install.sh`（同时安装 Vim 和 Neovim）
+   - 仅 Neovim：`bash scripts/install.sh --neovim`
+   - 仅 Vim：`bash scripts/install.sh --vim`
+   或手动复制：
+   - Vim：`cp grammars/bird2.syntax.vim ~/.vim/syntax/bird2.vim && cp -r misc/vim/ftdetect ~/.vim/`
+   - Neovim：`cp grammars/bird2.syntax.vim ~/.config/nvim/syntax/bird2.vim && cp -r misc/nvim/plugin ~/.config/nvim/`
+3. 打开 `sample/basic.conf` 验证高亮；用 `:verbose set ft?` 查看是否为 `filetype=bird2`。
+
+#### JetBrains（TextMate Bundles）
+
+<div align="center">
+
+![JetBrains IDEA 语法高亮 预览](.github/assets/jetbrains-idea-bird2-preview.jpg)
+
+</div>
+
+> [!NOTE]
+> 我们推荐使用 VSCode 以获得最佳体验，此方案仅作为备选方案。
+
+1. 准备语言包
+   a) 打开 https://open-vsx.org/extension/BIRDCC/vscode-bird2-conf ▸ 右下角 Resources ▸ 下载最新 `.vsix` 安装包；
+   b) 使用解压工具直接解压该 `.vsix` 文件；
+   c) 在解压后的目录中，**找到包含 `package.json` 的目录**，并记录该路径；
+2. 打开 IntelliJ IDEA：Settings/Preferences ▸ Editor ▸ TextMate Bundles；
+3. 点击 ➕（Add）并选择刚才 `1(c)` 步的目录；
+4. 在语言列表中找到 `bird2`，勾选启用；
+5. 按提示重启 IDE 生效。
+
 ### 进展公示
 
 - 已向上游项目提交合并请求：
@@ -26,11 +109,6 @@
 
 - 🚧 支持完整语法高亮与格式化的 VSCode 插件开发中
   - 👉 [加入 Telegram 封闭测试](https://t.me/bird_cnn/23)（中文社区专属）
-
-### 在线体验
-
-- 🌐 **Playground**（通过 Shiki 预览）：  
-  [https://deploy-preview-149--textmate-grammars-themes.netlify.app/?theme=ayu-dark\&grammar=bird2](https://deploy-preview-149--textmate-grammars-themes.netlify.app/?theme=ayu-dark&grammar=bird2)
 
 ### 贡献者致谢
 

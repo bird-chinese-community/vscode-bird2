@@ -32,7 +32,7 @@
     "Programming Languages"
   ],
   "scripts": {
-    "update-grammar": "git submodule update --remote syntaxes/bird-tm-grammar",
+    "update-grammar": "pnpm dlx degit --force bird-chinese-community/BIRD-tm-language-grammar#main syntaxes/bird-tm-grammar",
     "init-submodules": "git submodule update --init --recursive",
     "package": "vsce package",
     "publish": "vsce publish",
