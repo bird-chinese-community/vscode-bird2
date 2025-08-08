@@ -4,15 +4,20 @@
 .gitignore
 .gitmodules
 .git/**
+.github/**
 
 *.md
 !README.md
 !CHANGELOG.md
 
-**/sample/**
-**/README.md
-**/README.zh-CN.md
-syntaxes/bird-tm-grammar/LICENSE.*
+syntaxes/bird-tm-grammar/**
+!syntaxes/bird-tm-grammar/LICENSE.syntax
+!syntaxes/bird-tm-grammar/README.md
+!syntaxes/bird-tm-grammar/grammars/bird2.tmLanguage.json
+
+scripts/**
+
+.gitmodules
 
 node_modules/**
 .npm/**

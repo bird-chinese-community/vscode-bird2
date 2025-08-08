@@ -4,6 +4,12 @@ All notable changes to the "vscode-bird2-conf" extension will be documented in t
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.1.2] - 2025-08-08
+
+### 🐛 Bug Fixes
+
+- Update `.vscodeignore` to exclude unnecessary files
+
 ## [0.1.1] - 2025-08-08
 
 ### ♻️ Refactor
