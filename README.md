@@ -1,14 +1,19 @@
 # BIRD2 Configuration - VS Code Extension
 
-[![VS Code Marketplace](https://img.shields.io/badge/VS%20Code%20Marketplace-Install-blue?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=BIRDCC.vscode-bird2-conf) [![Open VSX Registry](https://img.shields.io/badge/Open%20VSX%20Registry-Install-blue?logo=eclipseide)](https://open-vsx.org/extension/BIRDCC/vscode-bird2-conf)
-
-[![Open VSX Downloads - BIRD2 Configuration](https://img.shields.io/open-vsx/dt/BIRDCC/vscode-bird2-conf?style=flat&label=Open-VSX%20Downloads)](https://open-vsx.org/extension/BIRDCC/vscode-bird2-conf) [![VSCode Marketplace Downloads - BIRD2 Configuration](https://img.shields.io/visual-studio-marketplace/d/BIRDCC.vscode-bird2-conf?style=flat&label=VSCode%20Marketplace%20Downloads)](https://marketplace.visualstudio.com/items?itemName=BIRDCC.vscode-bird2-conf)
-
-[![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0) [![GitHub stars](https://img.shields.io/github/stars/bird-chinese-community/vscode-bird2?style=flat&label=GitHub%20Stars)](https://github.com/bird-chinese-community/vscode-bird2/stargazers) [![GitHub forks](https://img.shields.io/github/forks/bird-chinese-community/vscode-bird2?style=flat&label=GitHub%20Forks)](https://github.com/bird-chinese-community/vscode-bird2/network)
-
 Professional syntax highlighting support for BIRD2 routing daemon configuration files in Visual Studio Code & VSCodium.
 
+<div align="center">
+
+![BIRD2 Configuration - VS Code Extension Preview](/assets/preview.jpg)
+
+[![VS Code Marketplace](https://img.shields.io/badge/VS%20Code%20Marketplace-Install-blue?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=BIRDCC.vscode-bird2-conf) [![Open VSX Registry](https://img.shields.io/badge/Open%20VSX%20Registry-Install-blue?logo=eclipseide)](https://open-vsx.org/extension/BIRDCC/vscode-bird2-conf)
+[![Open VSX Downloads - BIRD2 Configuration](https://img.shields.io/open-vsx/dt/BIRDCC/vscode-bird2-conf?style=flat&label=Open-VSX%20Downloads)](https://open-vsx.org/extension/BIRDCC/vscode-bird2-conf) [![VSCode Marketplace Downloads - BIRD2 Configuration](https://img.shields.io/visual-studio-marketplace/d/BIRDCC.vscode-bird2-conf?style=flat&label=VSCode%20Marketplace%20Downloads)](https://marketplace.visualstudio.com/items?itemName=BIRDCC.vscode-bird2-conf)
+[![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0) [![GitHub stars](https://img.shields.io/github/stars/bird-chinese-community/vscode-bird2?style=flat&label=GitHub%20Stars)](https://github.com/bird-chinese-community/vscode-bird2/stargazers) [![GitHub forks](https://img.shields.io/github/forks/bird-chinese-community/vscode-bird2?style=flat&label=GitHub%20Forks)](https://github.com/bird-chinese-community/vscode-bird2/network)
+
+
 **[English Version](#english) | [中文版](#中文)**
+
+</div>
 
 ---
 
