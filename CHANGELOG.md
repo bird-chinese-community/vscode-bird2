@@ -4,6 +4,19 @@ All notable changes to the "vscode-bird2-conf" extension will be documented in t
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.1.3] - 2026-03-02
+
+### ♻️ Refactor
+
+- Update grammar to the latest version (v1.0.8-20260301)
+  - Reorder pattern includes for better matching priority
+  - Add `protocol-phrases` support
+  - Format `fileTypes` array for better readability
+
+### 📝 Chores
+
+- Update `@vscode/vsce` from `^3.6.0` to `^3.7.1`
+
 ## [0.1.2] - 2025-08-08
 
 ### 🐛 Bug Fixes

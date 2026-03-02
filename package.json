@@ -40,7 +40,7 @@
     "prepackage": "pnpm run init-submodules"
   },
   "devDependencies": {
-    "@vscode/vsce": "^3.6.0"
+    "@vscode/vsce": "^3.7.1"
   },
   "icon": "assets/favicon-256.png",
   "galleryBanner": {
