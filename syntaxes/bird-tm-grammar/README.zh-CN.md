@@ -21,6 +21,7 @@
     - [VSCode](#vscode)
     - [Vim 导入](#vim-导入)
     - [JetBrains（TextMate Bundles）](#jetbrains-textmate-bundles)
+  - [开发工作流](#开发工作流)
   - [进展公示](#进展公示)
   - [贡献者致谢](#贡献者致谢)
   - [许可协议](#许可协议)
@@ -58,7 +59,7 @@
 - 安装 VSCode 扩展：[Open VSX Registry](https://open-vsx.org/extension/BIRDCC/vscode-bird2-conf) / [VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=BIRDCC.vscode-bird2-conf)。
 - 打开任意 BIRD2 配置文件并享受语法高亮。
 
-#### Vim 导入
+#### Vim / Neovim
 
 <div align="center">
 
@@ -69,16 +70,38 @@
 > [!NOTE]
 > 我们推荐使用 VSCode 以获得最佳体验。
 >
-> 请注意：Vim 语法高亮文件仍处于 Beta 阶段，欢迎反馈。
+> Vim/Neovim 支持已迁移到独立仓库，获得更好的维护和功能更新。
 
-1. 克隆此仓库：`git clone https://github.com/bird-chinese-community/bird-tm-language-grammar.git`。
+**独立插件仓库：**
+
+- **Vim**: [bird-chinese-community/bird2.vim](https://github.com/bird-chinese-community/bird2.vim)
+- **Neovim**: [bird-chinese-community/bird2.nvim](https://github.com/bird-chinese-community/bird2.nvim)
+
+**安装方式：**
+
+Vim (使用 vim-plug):
+```vim
+Plug 'bird-chinese-community/bird2.vim'
+```
+
+Neovim (使用 lazy.nvim):
+```lua
+{
+  "bird-chinese-community/bird2.nvim",
+  ft = "bird2",
+  config = function()
+    require("bird2").setup()
+  end
+}
+```
+
+**向后兼容（本仓库仍可安装）：**
+
+1. 克隆此仓库：`git clone https://github.com/bird-chinese-community/bird-tm-language-grammar.git`
 2. 一键安装：`bash scripts/install.sh`（同时安装 Vim 和 Neovim）
    - 仅 Neovim：`bash scripts/install.sh --neovim`
    - 仅 Vim：`bash scripts/install.sh --vim`
-   或手动复制：
-   - Vim：`cp grammars/bird2.syntax.vim ~/.vim/syntax/bird2.vim && cp -r misc/vim/ftdetect ~/.vim/`
-   - Neovim：`cp grammars/bird2.syntax.vim ~/.config/nvim/syntax/bird2.vim && cp -r misc/nvim/plugin ~/.config/nvim/`
-3. 打开 `sample/basic.conf` 验证高亮；用 `:verbose set ft?` 查看是否为 `filetype=bird2`。
+3. 打开 `sample/basic.conf` 验证高亮；用 `:verbose set ft?` 查看是否为 `filetype=bird2`
 
 #### JetBrains（TextMate Bundles）
 
@@ -99,6 +122,21 @@
 3. 点击 ➕（Add）并选择刚才 `1(c)` 步的目录；
 4. 在语言列表中找到 `bird2`，勾选启用；
 5. 按提示重启 IDE 生效。
+
+### 开发工作流
+
+本仓库使用 **Prek** 作为 pre-commit 执行器。
+
+1. 安装并启用 hooks：
+   - `prek install --install-hooks --hook-type pre-commit --hook-type pre-push --hook-type commit-msg`
+2. 在修改语法文件前后执行定向检查：
+   - `prek run --files grammars/bird2.tmLanguage.json`
+   - `prek run --files external/bird2.vim/syntax/bird2.vim external/bird2.nvim/syntax/bird2.vim`
+3. 在提交或发起 PR 前执行：
+   - `prek run --all-files`
+4. 快速提升 tm 语法 + Vim/Neovim 语法快照的 patch 版本：
+   - `node scripts/bump-version.js --dry-run`
+   - `node scripts/bump-version.js`
 
 ### 进展公示
 
