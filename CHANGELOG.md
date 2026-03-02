@@ -4,6 +4,12 @@ All notable changes to the "vscode-bird2-conf" extension will be documented in t
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.0] - 2026-03-02
+
+### 📝 Chores
+
+- Update `CHANGELOG.md` with release notes
+
 ## [0.1.3] - 2026-03-02
 
 ### ♻️ Refactor
