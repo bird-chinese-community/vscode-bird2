@@ -4,6 +4,15 @@ All notable changes to the "vscode-bird2-conf" extension will be documented in t
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.1] - 2026-03-07
+
+### ♻️ Refactor
+
+- Update bundled grammar to the latest version (v1.0.9-20260306)
+  - Add `local` / `neighbor` symbolic-ASN statement coverage
+  - Add symbolic `neighbor` targets and symbolic port constants
+  - Refresh scoped-interface and template matching behavior
+
 ## [0.2.0] - 2026-03-02
 
 ### 📝 Chores
